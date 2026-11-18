@@ -15,8 +15,10 @@ early observations onto early visits.
 
 Rules (these must be identical in the API's scoring code):
   * Distances: point-to-segment distance in the trip's AEQD projection (projection.py),
-    centred on the mean of the valid GPS points.
-  * Skip penalty: SKIP_PENALTY per metre of route arcs jumped over. Waived (lambda_i = 0)
+    centred on the mean of the valid GPS points, rounded to whole millimetres. All DP
+    arithmetic is integer (mm), so results are identical across machines and library builds.
+  * Skip penalty: SKIP_PENALTY per metre of route arcs jumped over (integer mm:
+    penalty = floor(1000*SKIP_PENALTY * cumulative_route_mm / 1000) differences). Waived (lambda_i = 0)
     when the time step into observation i exceeds GAP_SECONDS, because after a long gap
     the vehicle may legitimately have covered many arcs. Arcs skipped before the first
     observation and after the last are penalised the same way.
@@ -56,43 +58,50 @@ def align_route(pts_xy: np.ndarray, t: np.ndarray, valid: np.ndarray, route: np.
         return label, pos, dist
 
     A, B = arc_A[route], arc_B[route]
-    seg_len = np.hypot(*(B - A).T)
-    S = np.concatenate([[0.0], np.cumsum(seg_len)])        # S[k] = length of route[0:k]
     M = len(route)
     jidx = np.arange(M)
+    # All costs are integers in millimetres so every machine makes identical decisions:
+    # floating-point noise (~1e-7 m between numpy/pyproj builds) cannot flip a near-tie.
+    seg_mm = np.rint(np.hypot(*(B - A).T) * 1000.0).astype(np.int64)
+    S_mm = np.concatenate([[0], np.cumsum(seg_mm)])            # S_mm[k] = length of route[0:k]
+    lam_milli = int(round(skip_penalty * 1000))
+    Sp = (lam_milli * S_mm) // 1000                             # skip penalty (mm) up to position k
+    zeros = np.zeros_like(Sp)
+    BIG = np.iinfo(np.int64).max // 4
 
     tv = t[idx]
-    lam = np.full(len(idx), skip_penalty)
-    lam[1:][np.diff(tv) > gap_s] = 0.0
+    no_pen = np.zeros(len(idx), dtype=bool)
+    no_pen[1:] = np.diff(tv) > gap_s                            # waive penalty after long gaps
 
-    back = np.empty((len(idx), M), dtype=np.int32)          # best previous position
+    back = np.empty((len(idx), M), dtype=np.int32)              # best previous position
     Cbuf = None
     D = None
     for k in range(len(idx)):
         if k % CHUNK == 0:
-            Cbuf = dist_matrix(pts_xy[idx[k:k + CHUNK]], A, B)
+            Cbuf = np.rint(dist_matrix(pts_xy[idx[k:k + CHUNK]], A, B) * 1000.0).astype(np.int64)
         c = Cbuf[k % CHUNK]
         if k == 0:
-            D = c + lam[0] * S[:M]                          # arcs skipped before the start
+            D = c + Sp[:M]                                      # arcs skipped before the start
             back[0] = jidx
             continue
-        # jump from j' < j: D[j'] + lam * (S[j] - S[j'+1])
-        v = D - lam[k] * S[1:M + 1]                          # value of each origin j'
+        P = zeros if no_pen[k] else Sp
+        # jump from j' < j costs D[j'] + P[j] - P[j'+1]
+        v = D - P[1:M + 1]
         run = np.minimum.accumulate(v)
         new_min = np.empty(M, dtype=bool)
         new_min[0] = True
-        new_min[1:] = v[1:] < run[:-1]                       # strict: earliest origin on ties
+        new_min[1:] = v[1:] < run[:-1]                           # strict: earliest origin on ties
         arg = np.maximum.accumulate(np.where(new_min, jidx, 0))
-        jump = np.full(M, np.inf)
-        jump[1:] = lam[k] * S[1:M] + run[:-1]                # origins strictly before j
+        jump = np.full(M, BIG, dtype=np.int64)
+        jump[1:] = P[1:M] + run[:-1]                             # origins strictly before j
         jump_from = np.zeros(M, dtype=np.int32)
         jump_from[1:] = arg[:-1]
-        stay_better = D <= jump                              # tie -> stay
+        stay_better = D <= jump                                  # tie -> stay
         back[k] = np.where(stay_better, jidx, jump_from)
         D = c + np.where(stay_better, D, jump)
 
-    final = D + skip_penalty * (S[M] - S[1:M + 1])          # arcs skipped after the end
-    j = int(np.argmin(final))
+    final = D + (Sp[M] - Sp[1:M + 1])                           # arcs skipped after the end
+    j = int(np.argmin(final))                                    # tie -> lowest position
     path = np.empty(len(idx), dtype=np.int64)
     for k in range(len(idx) - 1, -1, -1):
         path[k] = j

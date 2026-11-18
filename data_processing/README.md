@@ -60,6 +60,7 @@ Each GPS observation gets a position in the route list. Positions never go backw
 - **Large gaps:** the skip penalty is waived after a time step > 30 s, so the vehicle may jump many arcs.
 - **Invalid points:** excluded from the alignment; label -1, position -1.
 - **Ties:** stay on the current position over jumping; the earliest origin among equal jumps; the lowest final position.
+- **Reproducibility:** distances are rounded to whole millimetres and all alignment arithmetic is integer, so every machine gives identical labels (floating-point differences between library builds cannot flip a near-tie).
 - **Rows:** nothing is dropped or reordered; output row k = `.track` row k.
 - **Known limitation:** where the GPS drives a stretch the reference route doesn't include in that direction, the order constraint can assign the reverse arc. The reference route is treated as reference information, not verified truth.
 
@@ -109,7 +110,7 @@ Also `summary_by_trip.csv` and `config.json`.
 | Candidate rows (per observation) | 1,866,677 (9.0) | 209,038 (10.9) |
 | Positive rate | 9.9% | 9.2% |
 | Candidate miss rate = low-confidence labels | 11.2% | 0.14% |
-| Labels changed from v0 | 7.6% | 9.3% |
+| Labels changed from v0 | 7.6% | 9.4% |
 
 Most v0-to-v1 changes are points within 1 m of the junction between two consecutive route arcs. On loop trips such as 56, v1 also fixes points that v0 had put on the wrong visit of a repeated road.
 
