@@ -1,0 +1,4 @@
+model,source,cv_macro_f1,cv_top1,cv_log_loss,test_top1,test_macro_f1,test_log_loss,route_continuity,inference_ms_per_1k_rows
+lgbm_untuned,artifacts/models/lgbm.joblib (B's existing fit),0.9273,0.8737,0.0726,0.8818,0.9314,0.0597,0.9236,20.716
+lgbm_untuned_rescored,"same artifact, re-scored on rebuilt data/features (drift check)",,,,0.8818,0.9314,0.0597,0.9236,3.674
+lgbm_tuned,"artifacts/models/lgbm_tuned.joblib (this script, refit on all 80 trips)",0.9274,0.8722,0.0729,0.8718,0.9284,0.0635,0.9226,1.139

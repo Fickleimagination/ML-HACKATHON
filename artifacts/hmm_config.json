@@ -1,9 +1,10 @@
 {
-  "version": "v1_1-aligned-tuned-distance-only",
+  "version": "v2-classifier-hmm",
   "radius_m": 50.0,
+  "model_path": "artifacts/models/lgbm_tuned.joblib",
   "emission": {
     "sigma_m": 1.6788762605299112,
-    "alpha_classifier_weight": 0.0
+    "alpha_classifier_weight": 0.5
   },
   "transition": {
     "beta_m": 18.2956835903205,
@@ -20,5 +21,5 @@
     "no_connector_between_route_arcs": "route continues without connector; counted as a disconnection",
     "connector_search_limit_m": 5000.0
   },
-  "notes": "Distance-only emissions until B's classifier is plugged in (alpha > 0). Candidates now come from A's shared preprocessing (data_processing.preprocess_trip via pathsnap/hmm/prepared_trip.py), not the old throwaway pathsnap/hmm/candidates_v0.py -- same arc ids/distances/projection as A's v1 labels and B's features, deterministic tie-break. gap_s lowered 60->30 to match A's segmentation rule. sigma/beta/uturn_penalty retuned by Optuna TPE, 60 trials, seed 42, widened ranges (sigma 0.5-50 log, beta 0.5-100 log, uturn_penalty 0-30) because the previous study pinned sigma to its old lower edge; uturn_penalty is still near the new edge (28.2/30). mean observation Top-1 (vs A's v1 reference labels) over the 80 TRAINING trips only -- see results/optuna_decoder.db, results/optuna_decoder_trials.csv, results/decoder_student_test.csv. Train mean top1=0.8379 (was 0.8334 pre-alignment). student_test mean top1: nearest 0.557, same old params under the new pipeline 0.8658, newly retuned 0.8670 -- the alignment fix was mostly about correctness/determinism (A's candidates, A's gap rule), not a student_test accuracy jump; most of task 3's gain over the untuned v0 defaults (0.8115) still stands. gap_s, radius_m and no_path_logp were held fixed (not tuned)."
+  "notes": "B's LightGBM classifier (features.build_features + models.zoo) is now plugged in via pathsnap/predict.py:_classifier_probs. Tuned with Optuna TPE over features.build_features/models.zoo's own CV rows (train partition, step=3, usable_only=True, GroupKFold by trip) -- time-boxed to 20 completed trials (not the originally planned 40) because of a hard ~30-minute wall-clock budget; best trial cv_macro_f1=0.9274 vs B's untuned 0.9273 (essentially tied), but test_top1 0.8718 vs B's 0.8818 (untuned is slightly better on student_test) at ~18x faster inference (1.1 vs 20.7 ms/1k rows) -- see results/optuna_classifier.db, results/optuna_classifier_trials.csv, results/classifier_tuned_vs_untuned.csv. lgbm_tuned.joblib (refit on all 80 training trips) is used anyway per the task spec; artifacts/models/lgbm.joblib (B's untuned fit) is untouched. alpha was NOT retuned jointly with sigma/beta/uturn_penalty (no new decoder Optuna study, time-boxed) -- those three stay at the v1_1-aligned-tuned-distance-only values. alpha was chosen from a 5-point grid {0, 0.25, 0.5, 0.75, 1.0} using 2-fold out-of-fold classifier probabilities on all 80 training trips (fit on one half, score the other, and vice versa, covering every point not just B's 1-in-3 CV sample) against the existing decoder cache: objective = mean Top-1 - 0.002 x mean disconnections per trip. alpha=0.5 won (objective 0.8386 vs 0.8237 at alpha=0); disconnections fell monotonically with alpha (7.09 at 0 down to 2.19 at 1.0) but Top-1 peaked at 0.5 and dropped at alpha=1.0 (pure classifier, no distance term) -- see results/alpha_grid.csv. Final student_test comparison (nearest / classifier-only / distance-only HMM / classifier+HMM): results/final_comparison.csv, results/figures/final_comparison.png."
 }

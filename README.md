@@ -100,12 +100,19 @@ Decoder settings live in `artifacts/hmm_config.json`. The original `pathsnap.hmm
 ### 4. Classifier tuning and integration (B and C)
 
 ```bash
-# [B/C: Optuna study for the chosen classifier, and how its probabilities enter the HMM (alpha)]
+python -m pathsnap.classifier.tune_classifier     # Optuna TPE on B's LightGBM, same CV rows/folds as models.train_models
+python -m pathsnap.classifier.refit_compare       # refit best params on all 80 training trips -> lgbm_tuned.joblib
+python -m pathsnap.classifier.alpha_grid          # choose alpha (0/.25/.5/.75/1) by OOF training Top-1 - 0.002x disconnections
+python -m pathsnap.classifier.final_comparison    # nearest / classifier-only / distance HMM / classifier+HMM on student-test
 ```
+
+B's `lgbm.joblib` is untouched; the tuned classifier is `artifacts/models/lgbm_tuned.joblib`, loaded by `pathsnap.predict._classifier_probs` (no labels, no `.route`, same candidate order as the decoder, asserted). The study was time-boxed to 20 completed trials (`results/optuna_classifier.db`, `results/optuna_classifier_trials.csv`) rather than the originally planned 40, under a hard wall-clock budget; its `cv_macro_f1` ties B's untuned default (0.9274 vs 0.9273) but `test_top1` is slightly lower (0.8718 vs 0.8818) at ~18x faster inference -- see `results/classifier_tuned_vs_untuned.csv`. The decoder's sigma/beta/uturn_penalty were **not** retuned jointly with alpha (no new decoder Optuna study, same time budget); alpha=0.5 was chosen from a 5-point grid using 2-fold out-of-fold classifier probabilities on all 80 training trips against the existing decoder cache (`results/alpha_grid.csv`). Final comparison: `results/final_comparison.csv`, `results/figures/final_comparison.png` -- classifier+HMM keeps almost all of classifier-only's Top-1 (0.882 vs 0.884) while fixing route coherence (mean disconnections 0.6 vs 14.6 per trip, route precision 0.82 vs 0.65), and beats distance-only HMM on Top-1 (0.882 vs 0.867) at similar continuity.
+
+New dependency: `lightgbm==4.7.0` (already in `requirements.txt` for B's models). No new packages for this step.
 
 ## Deployment: two laptops
 
-Laptop 1 hosts the FastAPI backend, decoder configuration and the trip dataset. Laptop 2 only needs the static `ui/` directory and a browser. The active predictor is `pathsnap.predict:predict_trip`, currently the tuned distance-only HMM using shared candidates and a 30-second gap rule. The classifier integration is pending.
+Laptop 1 hosts the FastAPI backend, decoder configuration and the trip dataset. Laptop 2 only needs the static `ui/` directory and a browser. The active predictor is `pathsnap.predict:predict_trip`, the classifier+HMM decoder (shared candidates, 30-second gap rule, B's tuned LightGBM blended in at alpha=0.5) described in step 4 above.
 
 From the repository root on laptop 1, with the environment active:
 

@@ -60,7 +60,7 @@ def _load_training_set(cfg):
             continue
         folder = str(TRAIN_DIR / name)
         track, nodes, arcs = load_trip(folder, name)
-        net, _, _, _, _ = prepare_trip(track, nodes, arcs, radius=cfg["radius"], gap_s=cfg["gap_s"])
+        net, _, _, _, _, _ = prepare_trip(track, nodes, arcs, radius=cfg["radius"], gap_s=cfg["gap_s"])
         cache = load_cache(name)
         labels = load_point_labels(name)
         ref_route = load_reference_route(folder, name)

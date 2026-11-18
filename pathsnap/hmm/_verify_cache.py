@@ -19,7 +19,7 @@ PARAM_SETS = [
 def check(folder, name):
     cfg = load_config()
     track, nodes, arcs = load_trip(folder, name)
-    net, xy, times, cands, _ = prepare_trip(track, nodes, arcs,
+    net, xy, times, cands, _, _ = prepare_trip(track, nodes, arcs,
                                              radius=cfg["radius"], gap_s=cfg["gap_s"])
 
     precompute_trip(folder, name, cfg)

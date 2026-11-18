@@ -42,7 +42,7 @@ def differs(folder, name, cfg):
     old_sets = _cand_sets(old["seg_idx"], old["n_cands"], old["cand_arc"])
 
     track, nodes, arcs = load_trip(folder, name)
-    _, _, times, cands, _ = prepare_trip(track, nodes, arcs, radius=cfg["radius"], gap_s=NEW_GAP_S)
+    _, _, times, cands, _, _ = prepare_trip(track, nodes, arcs, radius=cfg["radius"], gap_s=NEW_GAP_S)
     new_segs = split_segments(times, cands, NEW_GAP_S)
     new_sets = {t: frozenset(c[0] for c in cands[t]) for seg in new_segs for t in seg}
 

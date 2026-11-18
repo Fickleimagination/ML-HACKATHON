@@ -55,7 +55,7 @@ def naive_route(point_arcs):
 def load_trip_geometry(folder, name, radius, gap_s):
     track, nodes, arcs = load_trip(folder, name)
     t0 = time.time()
-    net, xy, _, cands, _ = prepare_trip(track, nodes, arcs, radius=radius, gap_s=gap_s)
+    net, xy, _, cands, _, _ = prepare_trip(track, nodes, arcs, radius=radius, gap_s=gap_s)
     cand_time = time.time() - t0
     return track, nodes, arcs, xy, net, cands, cand_time
 

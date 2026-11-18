@@ -41,7 +41,7 @@ def precompute_trip(folder, name, cfg=None):
     any parameter set is pure NumPy."""
     cfg = {**load_config(), **(cfg or {})}
     track, nodes, arcs = load_trip(folder, name)
-    net, xy, times, cands, _ = prepare_trip(track, nodes, arcs,
+    net, xy, times, cands, _, _ = prepare_trip(track, nodes, arcs,
                                              radius=cfg["radius"], gap_s=cfg["gap_s"])
     segs = split_segments(times, cands, cfg["gap_s"])
 
@@ -88,15 +88,25 @@ def load_cache(name):
         return {k: d[k] for k in d.files}
 
 
-def score_trip(cache, sigma, beta, uturn_penalty, no_path_logp=-50.0):
+def score_trip(cache, sigma, beta, uturn_penalty, no_path_logp=-50.0, cand_prob=None, alpha=0.0):
     """Replay Viterbi from the cache. Returns (point_idx, arc_id) arrays
     aligned the same way decode_trip's point_arcs is for points that have
-    candidates (points with none are simply absent, as in `seg_idx`)."""
+    candidates (points with none are simply absent, as in `seg_idx`).
+
+    cand_prob, if given, is a classifier P(candidate correct) array
+    positionally aligned with cache["cand_arc"] (same row order); emission
+    then blends it with the distance term exactly as viterbi._emission does:
+    alpha*log(prob) + (1-alpha)*(-0.5*(d/sigma)**2). alpha=0 or
+    cand_prob=None reproduces the old distance-only behaviour exactly."""
     seg_lens, seg_idx = cache["seg_lens"], cache["seg_idx"]
     n_cands, cand_arc, cand_dist = cache["n_cands"], cache["cand_arc"], cache["cand_dist"]
     straight, rd_shapes = cache["straight"], cache["rd_shapes"]
     rd_flat, uturn_flat = cache["rd_flat"], cache["uturn_flat"]
     c_off = np.concatenate([[0], np.cumsum(n_cands)])
+
+    emission = -0.5 * (cand_dist / sigma) ** 2
+    if cand_prob is not None and alpha > 0:
+        emission = alpha * np.log(np.clip(cand_prob, 1e-9, 1.0)) + (1 - alpha) * emission
 
     out_idx, out_arc = [], []
     pos, pair, rd_off = 0, 0, 0
@@ -107,10 +117,10 @@ def score_trip(cache, sigma, beta, uturn_penalty, no_path_logp=-50.0):
 
         def cand(k):
             s, e = base + local_off[k], base + local_off[k + 1]
-            return cand_dist[s:e], cand_arc[s:e]
+            return emission[s:e], cand_arc[s:e]
 
-        d0, arc0 = cand(0)
-        score = -0.5 * (d0 / sigma) ** 2
+        e0, arc0 = cand(0)
+        score = e0.copy()
         back = []
         for k in range(1, seg_len):
             i0, j0 = rd_shapes[pair]
@@ -121,8 +131,8 @@ def score_trip(cache, sigma, beta, uturn_penalty, no_path_logp=-50.0):
                               no_path_logp)
             total = score[:, None] + trans
             back.append(total.argmax(0))
-            dk, arck = cand(k)
-            score = total.max(0) - 0.5 * (dk / sigma) ** 2
+            ek, arck = cand(k)
+            score = total.max(0) + ek
             pair += 1
             rd_off += i0 * j0
 

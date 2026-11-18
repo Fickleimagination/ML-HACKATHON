@@ -35,7 +35,7 @@ def candidates_from_df(cand_df, n_points):
 
 
 def prepare_trip(track, nodes, arcs, radius=50.0, gap_s=30.0):
-    """Returns (net, xy, times, cands, tree):
+    """Returns (net, xy, times, cands, tree, prep):
         net   RoadNetwork built on A's own projected node coordinates
         xy    (N, 2) projected point coordinates, NaN rows zeroed (invalid
               points never appear in `cands` so they're never read)
@@ -43,6 +43,10 @@ def prepare_trip(track, nodes, arcs, radius=50.0, gap_s=30.0):
         cands per-point candidate list, see candidates_from_df
         tree  A's shapely STRtree over the arcs, for predict.py's
               global-nearest-arc fallback when nothing decoded at all
+        prep  the raw data_processing.preprocess.Prepared object (prep.cand,
+              prep.obs), for callers that need A's/B's own DataFrame schema
+              directly (e.g. feeding B's feature function) instead of
+              re-running preprocess_trip a second time
     gap_s only affects A's internal obs/heading table, not the candidates
     (candidate generation depends only on radius); it's threaded through so
     callers can keep that table consistent too if they start using it.
@@ -54,4 +58,4 @@ def prepare_trip(track, nodes, arcs, radius=50.0, gap_s=30.0):
     net = RoadNetwork(prep.node_xy, arcs)
     xy = np.nan_to_num(prep.pts_xy)
     cands = candidates_from_df(prep.cand, len(track))
-    return net, xy, track[:, 2], cands, prep.index.tree
+    return net, xy, track[:, 2], cands, prep.index.tree, prep
