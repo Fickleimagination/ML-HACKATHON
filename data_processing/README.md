@@ -87,7 +87,7 @@ Each GPS observation gets a position in the route list. Positions never go backw
 | `n_candidates` | Candidate arcs within 50 m |
 | `label_in_candidates` | Whether `label_arc` is among the candidates |
 
-### `candidates/<trip_id>.parquet`: one row per (observation, arc within 50 m), sorted by `obs_idx`, then `dist_m`
+### `candidates/<trip_id>.parquet`: one row per (observation, arc within 50 m), sorted by `obs_idx`, then distance rounded to the millimetre, then `cand_arc` (identical order on every machine; the two directions of a road are exactly equidistant, so ties are common)
 
 | Column | Meaning |
 | --- | --- |

@@ -40,7 +40,7 @@ class ArcIndex:
     def query(self, pts_xy: np.ndarray, radius: float = DEFAULT_RADIUS_M) -> pd.DataFrame:
         pi, ai = self.tree.query(shapely.points(pts_xy), predicate="dwithin", distance=radius)
         d, t = project_pairs(pts_xy[pi], self.A[ai], self.B[ai])
-        return pd.DataFrame({
+        df = pd.DataFrame({
             "obs_idx": pi.astype(np.int32),
             "cand_arc": ai.astype(np.int32),
             "dist_m": d.astype(np.float32),
@@ -52,4 +52,10 @@ class ArcIndex:
             "from_degree": self.degree[self.arcs[ai, 0]].astype(np.int16),
             "to_degree": self.degree[self.arcs[ai, 1]].astype(np.int16),
             "reverse_arc": self.reverse_arc[ai].astype(np.int32),
-        }).sort_values(["obs_idx", "dist_m"], kind="stable").reset_index(drop=True)
+        })
+        # Canonical order, identical on every machine: by point, then distance rounded to whole
+        # millimetres, then arc id. The two directions of a road are exactly equidistant, so
+        # without the arc-id tie-break their order would depend on the spatial index internals.
+        df["_dist_mm"] = np.rint(df["dist_m"].to_numpy(np.float64) * 1000.0).astype(np.int64)
+        df = df.sort_values(["obs_idx", "_dist_mm", "cand_arc"], kind="mergesort")
+        return df.drop(columns="_dist_mm").reset_index(drop=True)
