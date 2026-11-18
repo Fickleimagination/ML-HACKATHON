@@ -220,13 +220,13 @@ def folium_map(raw_root: str, processed: str, tid: str, why: str, path: str):
     # so the maps use Esri basemaps (no API key needed for this use).
     m = folium.Map(tiles=None, control_scale=True)
     folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
-        attr="Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
-        name="Basemap: light grey (Esri)", max_zoom=16).add_to(m)
-    folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics",
         name="Basemap: satellite (Esri)", max_zoom=19).add_to(m)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+        name="Basemap: light grey (Esri)", max_zoom=16).add_to(m)
 
     A, B = _clip_arcs(tr)
     net = folium.FeatureGroup(name="Road network (clipped to trip)", show=True)
