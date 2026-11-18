@@ -117,7 +117,7 @@ Most v0-to-v1 changes are points within 1 m of the junction between two consecut
 The train miss rate comes almost entirely from four trips:
 
 - **Trip 54:** after about point 2,700, the GPS leaves the supplied road network.
-- **Trip 33:** for points 2,085–5,126, the GPS follows roads the reference route does not use (the route is about 120 m away on a different road).
+- **Trip 33:** for points 2,085–5,126 (55 minutes), the vehicle moves around inside a ~120 × 160 m area away from the reference route, probably a car park or yard; the reference route is ~120 m away.
 - **Trips 2 and 96:** the trips end off the network.
 
 Baselines on usable points (label in candidates and not low-confidence):

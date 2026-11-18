@@ -30,7 +30,7 @@ PARTS = ["train", "student_test"]
 PART_COLOURS = {"train": "#2a6fdb", "student_test": "#e8833a"}
 MAP_TRIPS = {  # trip -> why it is shown
     "00000048": "clean trip (train)",
-    "00000033": "GPS and reference route take different roads for part of the trip (train)",
+    "00000033": "GPS circles in a ~120 x 160 m area off the reference route for 55 min (train)",
     "00000056": "route revisits arcs / loops (student_test)",
     "00000090": "very large time gap, 153,064 s (train)",
 }
@@ -217,7 +217,7 @@ def folium_map(raw_root: str, processed: str, tid: str, why: str, path: str):
     tr = load_trip(d)
     pts = pd.read_parquet(os.path.join(processed, "points", f"{tid}.parquet"))
     # OpenStreetMap's own tile servers refuse requests from local HTML files (HTTP 403, no Referer),
-    # so the maps use Esri basemaps (no API key, allowed for this use), with Carto as a fallback.
+    # so the maps use Esri basemaps (no API key needed for this use).
     m = folium.Map(tiles=None, control_scale=True)
     folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
@@ -227,10 +227,6 @@ def folium_map(raw_root: str, processed: str, tid: str, why: str, path: str):
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics",
         name="Basemap: satellite (Esri)", max_zoom=19).add_to(m)
-    folium.TileLayer(
-        tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        attr="&copy; OpenStreetMap contributors &copy; CARTO", subdomains="abcd",
-        name="Basemap: light (CARTO)", max_zoom=19).add_to(m)
 
     A, B = _clip_arcs(tr)
     net = folium.FeatureGroup(name="Road network (clipped to trip)", show=True)
