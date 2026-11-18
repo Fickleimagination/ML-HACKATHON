@@ -143,10 +143,23 @@ def score_trip(cache, sigma, beta, uturn_penalty, no_path_logp=-50.0):
     return np.array(out_idx, dtype=np.int64), np.array(out_arc, dtype=np.int64)
 
 
+def precompute_all(folder, cfg=None):
+    """Precompute the cache for every trip in a partition folder, one at a
+    time (clears the RoadNetwork's Dijkstra cache between trips)."""
+    for trip_dir in sorted(p for p in Path(folder).iterdir() if p.is_dir()):
+        name = trip_dir.name
+        t0 = time.time()
+        precompute_trip(str(trip_dir), name, cfg)
+        print(f"{name}: cached in {time.time() - t0:.1f}s")
+
+
 if __name__ == "__main__":
-    # one-off precompute for a trip, e.g.
-    #   python -m pathsnap.hmm.decode_cache data/student_test 00000056
-    folder, name = sys.argv[1], sys.argv[2]
-    t0 = time.time()
-    precompute_trip(folder, name)
-    print(f"cached {name} in {time.time() - t0:.1f}s -> {CACHE_DIR / (name + '.npz')}")
+    # single trip:   python -m pathsnap.hmm.decode_cache data/student_test 00000056
+    # whole folder:  python -m pathsnap.hmm.decode_cache data/train
+    if len(sys.argv) == 3:
+        folder, name = sys.argv[1], sys.argv[2]
+        t0 = time.time()
+        precompute_trip(folder, name)
+        print(f"cached {name} in {time.time() - t0:.1f}s -> {CACHE_DIR / (name + '.npz')}")
+    else:
+        precompute_all(sys.argv[1])

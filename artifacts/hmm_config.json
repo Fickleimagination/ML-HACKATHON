@@ -1,13 +1,13 @@
 {
-  "version": "v0-distance-only",
+  "version": "v1-tuned-distance-only",
   "radius_m": 50.0,
   "emission": {
-    "sigma_m": 10.0,
+    "sigma_m": 2.0105855690230556,
     "alpha_classifier_weight": 0.0
   },
   "transition": {
-    "beta_m": 5.0,
-    "uturn_penalty": 3.0,
+    "beta_m": 15.128719527893502,
+    "uturn_penalty": 9.404575920637322,
     "no_path_logp": -50.0,
     "dijkstra_limit": "2 * straight_line_m + 200"
   },
@@ -20,5 +20,5 @@
     "no_connector_between_route_arcs": "route continues without connector; counted as a disconnection",
     "connector_search_limit_m": 5000.0
   },
-  "notes": "Distance-only emissions until B's classifier is plugged in (alpha > 0). Values are untuned defaults; decoder Optuna study will replace them."
+  "notes": "Distance-only emissions until B's classifier is plugged in (alpha > 0). sigma/beta/uturn_penalty tuned by Optuna TPE, 60 trials, seed 42, mean observation Top-1 (vs A's v1 reference labels) over the 80 TRAINING trips only -- see results/optuna_decoder.db, results/optuna_decoder_trials.csv, results/decoder_student_test.csv. Train mean top1=0.8334; student_test mean top1 0.8115 (default) -> 0.8660 (tuned) vs 0.5426 (nearest baseline). gap_s, radius_m and no_path_logp were held fixed (not tuned)."
 }
