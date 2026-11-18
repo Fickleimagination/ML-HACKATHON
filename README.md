@@ -141,6 +141,14 @@ The API allows cross-origin requests from `http://127.0.0.1:8080` and `http://lo
 
 For a quick connection check, open `http://LAPTOP_1_IP:8000/ui/` from either laptop. This version serves the evaluator and API from the same address, so the browser connects automatically. Use the separate UI server above when the demo requires laptop 2 to host its own UI.
 
+If laptop 2 can reach `/trips` in Terminal but its browser fails to connect, run the local UI relay from laptop 2’s repository root:
+
+```sh
+python3 ui/serve.py --api http://LAPTOP_1_IP:8000
+```
+
+Use `py` in place of `python3` on Windows. Open the local URL printed by the relay. The browser talks to the UI on laptop 2, and the relay sends prediction requests over the LAN to laptop 1.
+
 ## API and verification
 
 - `GET /trips` returns the trip IDs and active predictor.
