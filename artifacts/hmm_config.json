@@ -1,0 +1,24 @@
+{
+  "version": "v0-distance-only",
+  "radius_m": 50.0,
+  "emission": {
+    "sigma_m": 10.0,
+    "alpha_classifier_weight": 0.0
+  },
+  "transition": {
+    "beta_m": 5.0,
+    "uturn_penalty": 3.0,
+    "no_path_logp": -50.0,
+    "dijkstra_limit": "2 * straight_line_m + 200"
+  },
+  "gaps": {
+    "gap_s": 60.0
+  },
+  "fallbacks": {
+    "no_candidate_point": "copy arc from nearest-in-time decoded point; if none, globally nearest arc",
+    "no_road_path_between_candidates": "transition log-prob = no_path_logp (Viterbi never dies)",
+    "no_connector_between_route_arcs": "route continues without connector; counted as a disconnection",
+    "connector_search_limit_m": 5000.0
+  },
+  "notes": "Distance-only emissions until B's classifier is plugged in (alpha > 0). Values are untuned defaults; decoder Optuna study will replace them."
+}
