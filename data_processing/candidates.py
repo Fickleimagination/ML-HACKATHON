@@ -29,6 +29,13 @@ class ArcIndex:
         self.length = np.hypot(d[:, 0], d[:, 1])
         self.bearing = bearing_deg(d[:, 0], d[:, 1])
         self.tree = STRtree(shapely.linestrings(np.stack([self.A, self.B], axis=1)))
+        # node degree (in + out arcs) over the whole network, not just nearby candidates
+        n_nodes = len(node_xy)
+        self.degree = (np.bincount(arcs[:, 0], minlength=n_nodes)
+                       + np.bincount(arcs[:, 1], minlength=n_nodes))
+        # does the opposite-direction arc (to -> from) exist? -1 if not
+        key = {(int(a), int(b)): i for i, (a, b) in enumerate(arcs)}
+        self.reverse_arc = np.array([key.get((int(b), int(a)), -1) for a, b in arcs], dtype=np.int64)
 
     def query(self, pts_xy: np.ndarray, radius: float = DEFAULT_RADIUS_M) -> pd.DataFrame:
         pi, ai = self.tree.query(shapely.points(pts_xy), predicate="dwithin", distance=radius)
@@ -42,4 +49,7 @@ class ArcIndex:
             "arc_bearing_deg": self.bearing[ai].astype(np.float32),
             "from_node": self.arcs[ai, 0].astype(np.int32),
             "to_node": self.arcs[ai, 1].astype(np.int32),
+            "from_degree": self.degree[self.arcs[ai, 0]].astype(np.int16),
+            "to_degree": self.degree[self.arcs[ai, 1]].astype(np.int16),
+            "reverse_arc": self.reverse_arc[ai].astype(np.int32),
         }).sort_values(["obs_idx", "dist_m"], kind="stable").reset_index(drop=True)

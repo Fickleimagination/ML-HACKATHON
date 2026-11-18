@@ -1,0 +1,3 @@
+partition,track_nan,nodes_nan,track_bad_coord,dup_timestamps,time_backwards,arcs_bad_node_id,route_bad_arc_id,route_breaks
+student_test,0,0,0,0,0,0,0,1
+train,0,0,0,0,0,0,0,13
