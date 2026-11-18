@@ -1,0 +1,47 @@
+{
+ "model": "rf",
+ "family": "Ensemble (bagging)",
+ "config": "{\"n_estimators\": 150, \"max_depth\": 20, \"min_samples_leaf\": 20, \"max_samples\": 0.3, \"n_jobs\": -1, \"random_state\": 42}",
+ "seed": 42,
+ "step": 3,
+ "n_train_rows": 607165,
+ "n_test_rows": 209038,
+ "train_time_s": 12.66005279996898,
+ "cv_time_s": 50.54122850007843,
+ "infer_ms_per_1k_rows": 1.9526425817362916,
+ "train_top1": 0.8883333333333333,
+ "route_continuity": 0.9181723237597911,
+ "cv_fold_top1": [
+  0.8830390719612468,
+  0.9034363601459013,
+  0.84467633207129,
+  0.8139435414884517,
+  0.8879968923993267
+ ],
+ "cv_macro_f1": 0.9217006138074938,
+ "cv_macro_f1_std": 0.01634134478756393,
+ "cv_macro_f1_pick": 0.9259617019863768,
+ "cv_macro_f1_pick_std": 0.01694414087299015,
+ "cv_top1": 0.8666184396132433,
+ "cv_top1_std": 0.0326751760773344,
+ "cv_log_loss": 0.07661899807741863,
+ "cv_log_loss_std": 0.012064567380354376,
+ "test_top1": 0.8627348643006263,
+ "test_top1_given_candidate": 0.8639523336643495,
+ "test_miss_rate": 0.0014091858037578175,
+ "test_macro_f1_pick": 0.9247821243245933,
+ "test_macro_f1": 0.921520840536123,
+ "test_macro_precision": 0.9395033413402116,
+ "test_macro_recall": 0.9052800873859812,
+ "test_log_loss": 0.06682489931476573,
+ "test_confusion": [
+  [
+   188103,
+   1802
+  ],
+  [
+   3443,
+   15690
+  ]
+ ]
+}

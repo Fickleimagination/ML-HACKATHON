@@ -1,0 +1,47 @@
+{
+ "model": "knn",
+ "family": "Instance-based",
+ "config": "{\"n_neighbors\": 25, \"weights\": \"distance\", \"n_jobs\": -1}",
+ "seed": 42,
+ "step": 3,
+ "n_train_rows": 607165,
+ "n_test_rows": 209038,
+ "train_time_s": 2.1563581000082195,
+ "cv_time_s": 469.9300754000433,
+ "infer_ms_per_1k_rows": 672.9354198757072,
+ "train_top1": 0.882,
+ "route_continuity": 0.9096083550913838,
+ "cv_fold_top1": [
+  0.8579259353687296,
+  0.8751199846419658,
+  0.8231600332440668,
+  0.7881736526946108,
+  0.863459795416289
+ ],
+ "cv_macro_f1": 0.8954364700505695,
+ "cv_macro_f1_std": 0.01604950567955062,
+ "cv_macro_f1_pick": 0.9120142085888038,
+ "cv_macro_f1_pick_std": 0.01625553717410772,
+ "cv_top1": 0.8415678802731325,
+ "cv_top1_std": 0.03181942172219756,
+ "cv_log_loss": 0.1315705844483235,
+ "cv_log_loss_std": 0.02850438501253714,
+ "test_top1": 0.8418058455114823,
+ "test_top1_given_candidate": 0.8429937803794492,
+ "test_miss_rate": 0.0014091858037578175,
+ "test_macro_f1_pick": 0.9132543703991822,
+ "test_macro_f1": 0.8966400579390177,
+ "test_macro_precision": 0.9090546896295708,
+ "test_macro_recall": 0.8851394363883452,
+ "test_log_loss": 0.10788576582327288,
+ "test_confusion": [
+  [
+   187034,
+   2871
+  ],
+  [
+   4106,
+   15027
+  ]
+ ]
+}

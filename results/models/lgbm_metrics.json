@@ -1,0 +1,47 @@
+{
+ "model": "lgbm",
+ "family": "Boosting",
+ "config": "{\"n_estimators\": 400, \"learning_rate\": 0.05, \"num_leaves\": 63, \"min_child_samples\": 50, \"subsample\": 0.8, \"subsample_freq\": 1, \"colsample_bytree\": 0.8, \"random_state\": 42, \"n_jobs\": -1, \"verbose\": -1}",
+ "seed": 42,
+ "step": 3,
+ "n_train_rows": 607165,
+ "n_test_rows": 209038,
+ "train_time_s": 6.8282614999916404,
+ "cv_time_s": 42.90242039994337,
+ "infer_ms_per_1k_rows": 20.71555554479538,
+ "train_top1": 0.932,
+ "route_continuity": 0.9236031331592689,
+ "cv_fold_top1": [
+  0.8885206195423545,
+  0.9093875983874065,
+  0.8526179702650291,
+  0.8263473053892215,
+  0.8914929431568044
+ ],
+ "cv_macro_f1": 0.9272610472485695,
+ "cv_macro_f1_std": 0.014457298329649584,
+ "cv_macro_f1_pick": 0.9298582971266839,
+ "cv_macro_f1_pick_std": 0.015570306169390896,
+ "cv_top1": 0.8736732873481632,
+ "cv_top1_std": 0.0299885657052161,
+ "cv_log_loss": 0.07262496768155992,
+ "cv_log_loss_std": 0.013798878674048292,
+ "test_top1": 0.8818371607515657,
+ "test_top1_given_candidate": 0.8830815867872263,
+ "test_miss_rate": 0.0014091858037578175,
+ "test_macro_f1_pick": 0.935303715189183,
+ "test_macro_f1": 0.9314293766787451,
+ "test_macro_precision": 0.9373658039630279,
+ "test_macro_recall": 0.9256924547571439,
+ "test_log_loss": 0.05972974421495727,
+ "test_confusion": [
+  [
+   187836,
+   2069
+  ],
+  [
+   2635,
+   16498
+  ]
+ ]
+}

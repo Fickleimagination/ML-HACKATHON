@@ -7,7 +7,7 @@ PathSnap matches noisy GPS observations to a road network. For every GPS point i
 | Member | Role | Code |
 | --- | --- | --- |
 | Bhavyaa Garg | A: data processing, reference labels, EDA | `data_processing/` |
-| [name] | B: features and models | `features/`, `models/` *(to be pushed)* |
+| Person B | Features and models | `features/`, `models/` |
 | Arundhati K | C: Bayesian optimisation, HMM and Viterbi | `pathsnap/` |
 | Bhavesh V | D: API, UI and deployment | `api/`, `ui/`, `visualisation/` |
 
@@ -16,8 +16,8 @@ PathSnap matches noisy GPS observations to a road network. For every GPS point i
 ```text
 data_processing/     A: loaders, per-trip projection, cleaning, candidates, v1 labels, EDA
   preprocess.py      shared entry point used by training, the API and scoring
-features/            B: feature extraction                         (to be pushed)
-models/              B: training, comparison, plots                (to be pushed)
+features/            B: feature extraction from processed trips
+models/              B: training, comparison and plots
 pathsnap/
   predict.py         single prediction entry point: predict_trip(track, nodes, arcs)
   hmm/               C: road graph, Dijkstra, HMM/Viterbi, decoder cache and tuning
@@ -27,8 +27,8 @@ api/                 D: FastAPI backend and server-side scoring
 ui/                  D: static evaluator interface
 visualisation/       D: Folium maps for the UI and report
 scripts/check_api.py D: HTTP readiness and prediction parity checks
-artifacts/           hmm_config.json and saved model files
-results/             tables, figures, Folium maps, Optuna studies, logs
+artifacts/           HMM config and fitted models under models/
+results/             metrics, figures, Folium maps, Optuna studies and demo evidence
 data/                raw and processed data (not in git)
 ```
 
@@ -53,6 +53,7 @@ data/
   student_test/<trip_id>/...                                 10 trips
   evaluator_test/<trip_id>/...                               10 reserved trips, API laptop only
   processed/                                                 created by step 1 below
+  features/                                                  created by step 2 below
 ```
 
 Each trip has four header-less, whitespace-separated files: `.track` (lon, lat, t), `.nodes` (lon, lat; row = node id), `.arcs` (from node, to node; row = arc id) and `.route` (ordered arc ids). Evaluator-test trips are only ever placed on the API laptop and are never used for training, tuning or model selection.
@@ -75,11 +76,12 @@ Outputs: `data/processed/points/` and `data/processed/candidates/` (one parquet 
 ### 2. Features and models (B)
 
 ```bash
-# [B: add the exact commands, e.g.]
-# python -m features.build_features ...
-# python -m models.train_models ...
-# python -m models.make_plots ...
+python -m features.build_features --processed data/processed --raw data --out data/features
+python -m models.train_models --features data/features --out results --artifacts artifacts/models
+python -m models.make_plots results
 ```
+
+The trainer defaults to all seven models. Use `--models lr gnb rf`, for example, to run a subset. It uses five-fold CV grouped by trip, samples every third training observation, and keeps training points with a trusted reference label present in the candidates. See the [model comparison](results/model_comparison.csv), [per-model metrics](results/models/) and [saved fitted artifacts](artifacts/models/). The comparison reports agreement with the aligned reference labels. KNN fits a 50,000-row training sample. The artifacts retain each estimator and its ordered feature list.
 
 ### 3. HMM decoder: tuning and evaluation (C)
 

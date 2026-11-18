@@ -1,0 +1,47 @@
+{
+ "model": "lgbm_rank",
+ "family": "Learning to rank",
+ "config": "{\"n_estimators\": 400, \"learning_rate\": 0.05, \"num_leaves\": 63, \"min_child_samples\": 50, \"subsample\": 0.8, \"subsample_freq\": 1, \"colsample_bytree\": 0.8, \"random_state\": 42, \"n_jobs\": -1, \"verbose\": -1, \"objective\": \"lambdarank\"}",
+ "seed": 42,
+ "step": 3,
+ "n_train_rows": 607165,
+ "n_test_rows": 209038,
+ "train_time_s": 8.72596309997607,
+ "cv_time_s": 51.93170239997562,
+ "infer_ms_per_1k_rows": 23.319537595691365,
+ "train_top1": 0.9626666666666667,
+ "route_continuity": 0.927780678851175,
+ "cv_fold_top1": [
+  0.8903053094524827,
+  0.9102514878095603,
+  0.8530796934158279,
+  0.8320145423438836,
+  0.8855367085329535
+ ],
+ "cv_macro_f1": NaN,
+ "cv_macro_f1_std": NaN,
+ "cv_macro_f1_pick": 0.9301392411077971,
+ "cv_macro_f1_pick_std": 0.01455896767825737,
+ "cv_top1": 0.8742375483109417,
+ "cv_top1_std": 0.027976007094263417,
+ "cv_log_loss": NaN,
+ "cv_log_loss_std": NaN,
+ "test_top1": 0.8843423799582464,
+ "test_top1_given_candidate": 0.8855903412951445,
+ "test_miss_rate": 0.0014091858037578175,
+ "test_macro_f1_pick": 0.9366835959583095,
+ "test_macro_f1": NaN,
+ "test_macro_precision": NaN,
+ "test_macro_recall": NaN,
+ "test_log_loss": NaN,
+ "test_confusion": [
+  [
+   187689,
+   2216
+  ],
+  [
+   2189,
+   16944
+  ]
+ ]
+}
