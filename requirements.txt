@@ -17,5 +17,6 @@ joblib==1.6.0
 
 # API (D); the UI is static HTML/CSS/JS
 fastapi==0.163.2
+starlette>=1.10.0
 uvicorn==0.54.0
 pydantic>=2.0,<3

@@ -137,7 +137,9 @@ python -m http.server 8080 --bind 127.0.0.1 --directory ui
 3. Select a trip and click **Run prediction**. The Folium map’s GPS, road network and predicted route layers render offline. Enable the optional OpenStreetMap layer only if you want an online basemap.
 4. For the reserved partition, run `python -m scripts.check_api --readiness-only` on laptop 1 to verify all 10 trip responses without printing or exporting scores. Keep the API terminal visible during the demo for request and inference logs.
 
-Set `PATHSNAP_CORS_ORIGINS=http://127.0.0.1:8080` on laptop 1 to limit browser requests to that UI origin. The default allows cross-origin requests from the demo UI.
+The API allows cross-origin requests from `http://127.0.0.1:8080` and `http://localhost:8080`. Set `PATHSNAP_CORS_ORIGINS` on laptop 1 to a comma-separated list of UI origins if you use a different address or port.
+
+For a quick connection check, open `http://LAPTOP_1_IP:8000/ui/` from either laptop. This version serves the evaluator and API from the same address, so the browser connects automatically. Use the separate UI server above when the demo requires laptop 2 to host its own UI.
 
 ## API and verification
 

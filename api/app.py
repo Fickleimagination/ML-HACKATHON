@@ -7,6 +7,7 @@ from time import perf_counter
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from api.predictor import load_predictor, validate_prediction
@@ -29,13 +30,26 @@ async def lifespan(app):
 
 
 app = FastAPI(title="PathSnap", lifespan=lifespan)
-origins = os.getenv("PATHSNAP_CORS_ORIGINS", "*")
+origins = [
+    origin.strip() for origin in os.getenv(
+        "PATHSNAP_CORS_ORIGINS", "http://127.0.0.1:8080,http://localhost:8080"
+    ).split(",") if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in origins.split(",") if origin.strip()],
+    allow_origins=origins,
+    allow_private_network=bool(origins) and "*" not in origins,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+
+@app.get("/ui/", include_in_schema=False)
+@app.get("/ui/{asset}", include_in_schema=False)
+def serve_evaluator(asset: str = "index.html"):
+    if asset not in {"index.html", "app.js", "styles.css"}:
+        raise HTTPException(404, "Evaluator asset is not available")
+    return FileResponse(Path(__file__).resolve().parents[1] / "ui" / asset)
 
 
 class PredictRequest(BaseModel):

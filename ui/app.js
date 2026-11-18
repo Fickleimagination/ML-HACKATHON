@@ -19,12 +19,14 @@ const metricNames = {
 };
 const percent = new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 });
 const defaultApi = new URL(location.href);
-defaultApi.port = "8000";
+const servedByApi = location.pathname.startsWith("/ui/");
+if (!servedByApi) defaultApi.port = "8000";
 defaultApi.pathname = "/";
 let revision = 0;
 let predictor;
 let connectedApi;
-api.value = new URLSearchParams(location.search).get("api") || localStorage.getItem("pathsnap-api") || defaultApi.origin;
+api.value = new URLSearchParams(location.search).get("api")
+  || (servedByApi ? defaultApi.origin : localStorage.getItem("pathsnap-api") || defaultApi.origin);
 
 function message(text, error = false) {
   status.textContent = text;
