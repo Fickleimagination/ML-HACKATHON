@@ -9,7 +9,7 @@ Trips 54, 33, 2 and 96 contain stretches where the GPS leaves the road network o
 with the reference route (data_quality_log.md); results are given with and without them.
 
 Usage:
-    python -m data_processing.radius_curve --raw "data/raw/Student folder" --processed data/processed --out results/radius
+    python -m data_processing.radius_curve --raw data --processed data/processed --out results/radius
 """
 from __future__ import annotations
 

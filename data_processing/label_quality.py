@@ -4,7 +4,7 @@ Compares v1 (order-preserving alignment) with v0 (nearest route arc, heading tie
 measures how often a reference label points against the direction of travel.
 
 Usage:
-    python -m data_processing.label_quality --raw "data/raw/Student folder" --processed data/processed --out results/labels
+    python -m data_processing.label_quality --raw data --processed data/processed --out results/labels
 
 Outputs:
     label_quality_by_trip.csv

@@ -1,7 +1,7 @@
 """Exploratory data analysis for PathSnap (report section 2).
 
 Usage (from the repo root, after build_dataset has run):
-    python -m data_processing.eda --raw "data/raw/Student folder" --processed data/processed --out results/eda
+    python -m data_processing.eda --raw data --processed data/processed --out results/eda
 
 Uses the train and student_test partitions only. Every table and figure states its partition.
 Outputs:

@@ -1,7 +1,7 @@
 """Build per-trip observation and candidate tables (Person A -> B/C hand-off).
 
 Usage (from the repo root):
-    python -m data_processing.build_dataset --raw "data/raw/Student folder" --out data/processed
+    python -m data_processing.build_dataset --raw data --out data/processed
 
 Writes, for each trip in train/ and student_test/:
     <out>/points/<trip_id>.parquet      one row per GPS observation

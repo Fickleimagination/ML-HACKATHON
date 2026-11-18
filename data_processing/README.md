@@ -6,9 +6,9 @@ Turns raw trip files into per-observation reference labels and per-candidate geo
 
 ```bash
 pip install numpy pandas pyproj shapely pyarrow scipy matplotlib folium
-# raw data at data/raw/Student folder/{train,student_test}/<trip_id>/
-python -m data_processing.build_dataset --raw "data/raw/Student folder" --out data/processed   # ~40 s
-python -m data_processing.eda --raw "data/raw/Student folder" --processed data/processed --out results/eda
+# raw data at data/train/<trip_id>/ and data/student_test/<trip_id>/
+python -m data_processing.build_dataset --raw data --out data/processed   # ~40 s
+python -m data_processing.eda --raw data --processed data/processed --out results/eda
 ```
 
 Evaluator-test trips are never touched by these scripts.
