@@ -121,9 +121,11 @@ document.querySelector("#prediction").addEventListener("submit", async event => 
     }));
     results.hidden = false;
     if (data.map_html) {
-      map.srcdoc = data.map_html;
       map.hidden = false;
       placeholder.hidden = true;
+      // Give Leaflet a visible viewport before the iframe's map script initializes.
+      map.getBoundingClientRect();
+      map.srcdoc = data.map_html;
     }
     mapTrip.textContent = data.trip_id;
     message(data.predictor);

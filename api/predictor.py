@@ -68,11 +68,16 @@ def validate_prediction(result, obs_count, arc_count):
         raise ValueError("Return one ID per observation and a route when any observation matches")
     confidence = result.get("confidence")
     if confidence is not None:
-        confidence = np.asarray(confidence, dtype=float)
-        if confidence.shape != predicted.shape or not (
-            np.isfinite(confidence).all() and ((0 <= confidence) & (confidence <= 1)).all()
-        ):
-            raise ValueError("Confidence requires one finite probability per observation")
+        confidence = np.array(confidence, dtype=object)
+        if confidence.shape != predicted.shape:
+            raise ValueError("Confidence requires one entry per observation")
+        # Fallback arcs can be valid predictions without a classifier score.
+        scored = np.array([value is not None for value in confidence], dtype=bool)
+        probabilities = confidence[scored].astype(float)
+        if not (np.isfinite(probabilities).all()
+                and ((0 <= probabilities) & (probabilities <= 1)).all()):
+            raise ValueError("Confidence entries must be finite probabilities or null")
+        confidence[scored] = probabilities
     candidates = result.get("candidate_arcs")
     if candidates is not None:
         if len(candidates) != obs_count:

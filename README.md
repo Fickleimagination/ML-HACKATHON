@@ -124,7 +124,7 @@ python -m uvicorn api.app:app --host 0.0.0.0 --port 8000
 PATHSNAP_DATA=data/evaluator_test python -m uvicorn api.app:app --host 0.0.0.0 --port 8000
 ```
 
-For the final-demo launch in PowerShell, set `$env:PATHSNAP_DATA = "data/evaluator_test"` before running the same Uvicorn command. Set `PATHSNAP_PREDICTOR=nearest` for the nearest-arc baseline or set it to a compatible `module:function` to exercise another predictor. The callable takes raw `track`, `nodes` and `arcs` arrays and returns observation arc IDs and an ordered route. It may include confidence, candidate lists in predictor order, and decoder diagnostics.
+For the final-demo launch in PowerShell, set `$env:PATHSNAP_DATA = "data/evaluator_test"` before running the same Uvicorn command. Set `PATHSNAP_PREDICTOR=nearest` for the nearest-arc baseline or set it to a compatible `module:function` to exercise another predictor. The callable takes raw `track`, `nodes` and `arcs` arrays and returns observation arc IDs and an ordered route. It may include per-observation confidence (a probability or null when the selected arc has no classifier score), candidate lists in predictor order, and decoder diagnostics.
 
 On laptop 2, run this from the repository root with the UI directory present:
 
@@ -151,10 +151,10 @@ curl -X POST http://127.0.0.1:8000/predict \
   -H 'Content-Type: application/json' \
   -d '{"trip_id":"00000052","include_map":false}'
 python -m scripts.check_api --api http://127.0.0.1:8000 \
-  --direct-data data/student_test --csv results/deployment/student_test_hmm_aligned.csv
+  --direct-data data/student_test --csv results/deployment/student_test_classifier_hmm.csv
 ```
 
-These examples use the API’s default student-test partition. The smoke check calls the same HTTP endpoints as the UI for all 10 trips and verifies response structure, scoring and map layers. The `--direct-data` option compares the response exactly with a direct run on the same machine. The `--expected-dir results/expected_outputs` option performs a strict comparison with C’s saved fixtures. On the development Mac, the API matches local direct inference on all 10 student-test trips. All saved fixtures match candidate ordering and diagnostics. Three match every prediction field exactly. The remaining differences are 46 per-observation arc IDs and one reconstructed route. For the trained model, use fixtures from the corresponding predictor version and a new CSV filename. On the API laptop, capture the terminal showing `POST /predict` and HTTP 200 for the report.
+These examples use the API’s default student-test partition. The smoke check calls the same HTTP endpoints as the UI for all 10 trips and verifies response structure, scoring and map layers. The `--direct-data` option compares the response exactly with a direct run on the same machine. The `--expected-dir results/expected_outputs` option performs a strict comparison with C’s saved fixtures. On the development Mac, the API matches local direct inference on all 10 student-test trips. For the final classifier and HMM, all ten saved fixtures match point-level arcs, candidate ordering and diagnostics. Nine fixture routes match every arc ID. Trip `00000009` differs at three parallel connector arc IDs with the same directed endpoints. Confidence differences are at floating-point rounding scale. On the API laptop, capture the terminal showing `POST /predict` and HTTP 200 for the report.
 
 ## Scoring and report maps
 
@@ -166,7 +166,7 @@ For an offline report comparison, run this command locally on a machine with the
 python -m visualisation.maps 00000052 results/student_test_00000052.html --reference
 ```
 
-The report command can include a reference layer. The evaluator API keeps reference geometry and per-observation labels on the server. See [the report handoff](results/report_sections_6_7.md) for the distance-only HMM evidence and final capture checklist.
+The report command can include a reference layer. The evaluator API keeps reference geometry and per-observation labels on the server. See [the report handoff](results/report_sections_6_7.md) for the combined predictor evidence and final capture checklist.
 
 ## Rules we follow
 
