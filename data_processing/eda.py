@@ -216,7 +216,21 @@ def folium_map(raw_root: str, processed: str, tid: str, why: str, path: str):
     d = glob.glob(os.path.join(raw_root, "*", tid))[0]
     tr = load_trip(d)
     pts = pd.read_parquet(os.path.join(processed, "points", f"{tid}.parquet"))
-    m = folium.Map(tiles="OpenStreetMap", control_scale=True)
+    # OpenStreetMap's own tile servers refuse requests from local HTML files (HTTP 403, no Referer),
+    # so the maps use Esri basemaps (no API key, allowed for this use), with Carto as a fallback.
+    m = folium.Map(tiles=None, control_scale=True)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+        name="Basemap: light grey (Esri)", max_zoom=16).add_to(m)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics",
+        name="Basemap: satellite (Esri)", max_zoom=19).add_to(m)
+    folium.TileLayer(
+        tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        attr="&copy; OpenStreetMap contributors &copy; CARTO", subdomains="abcd",
+        name="Basemap: light (CARTO)", max_zoom=19).add_to(m)
 
     A, B = _clip_arcs(tr)
     net = folium.FeatureGroup(name="Road network (clipped to trip)", show=True)
