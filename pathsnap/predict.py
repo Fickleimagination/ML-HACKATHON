@@ -14,8 +14,7 @@ from pathlib import Path
 import numpy as np
 from shapely import points
 
-from pathsnap.hmm.candidates_v0 import build_index, candidates
-from pathsnap.hmm.routing import RoadNetwork, make_projector
+from pathsnap.hmm.prepared_trip import prepare_trip
 from pathsnap.hmm.viterbi import decode_trip
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "artifacts" / "hmm_config.json"
@@ -42,7 +41,7 @@ def _classifier_probs(track, nodes, arcs, xy, net, cands):
     return None
 
 
-def _fill_missing(point_arcs, net, tree, xy):
+def _fill_missing(point_arcs, tree, xy):
     """Give every observation an arc: copy from the nearest-in-time decoded
     point; if nothing was decoded at all, use the globally nearest arc."""
     have = np.flatnonzero(point_arcs >= 0)
@@ -64,17 +63,12 @@ def predict_trip(track, nodes, arcs, config=None):
     track, nodes = np.asarray(track, float), np.asarray(nodes, float)
     arcs = np.asarray(arcs, np.int64)
 
-    proj = make_projector(track[:, 0], track[:, 1])
-    xy = np.column_stack(proj.transform(track[:, 0], track[:, 1]))
-    nxy = np.column_stack(proj.transform(nodes[:, 0], nodes[:, 1]))
-    net = RoadNetwork(nxy, arcs)
-    tree = build_index(net)
-
-    cands = candidates(net, tree, xy, cfg["radius"])
+    net, xy, times, cands, tree = prepare_trip(track, nodes, arcs,
+                                                radius=cfg["radius"], gap_s=cfg["gap_s"])
     probs = _classifier_probs(track, nodes, arcs, xy, net, cands)
-    point_arcs, route, stats = decode_trip(net, xy, track[:, 2], cands, probs, cfg)
+    point_arcs, route, stats = decode_trip(net, xy, times, cands, probs, cfg)
     no_cand = int(sum(not c for c in cands))
-    point_arcs = _fill_missing(point_arcs, net, tree, xy)
+    point_arcs = _fill_missing(point_arcs, tree, xy)
 
     return {
         "arcs": point_arcs.tolist(),                       # one per observation

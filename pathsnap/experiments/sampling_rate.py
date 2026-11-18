@@ -33,7 +33,8 @@ def main():
     for trip_dir in sorted(p for p in STUDENT_TEST_DIR.iterdir() if p.is_dir()):
         name = trip_dir.name
         folder = str(trip_dir)
-        track, nodes, arcs, xy, net, cands, _ = load_trip_geometry(folder, name, cfg["radius"])
+        track, nodes, arcs, xy, net, cands, _ = load_trip_geometry(
+            folder, name, cfg["radius"], cfg["gap_s"])
         times = track[:, 2]
         labels = load_point_labels(name)
         label_arc = labels["label_arc"].to_numpy()

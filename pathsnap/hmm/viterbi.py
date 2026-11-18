@@ -63,6 +63,24 @@ def split_segments(times, cands, gap_s):
     return segs
 
 
+def build_route(net, point_arcs, connector_limit=5000.0):
+    """Dedup consecutive repeats and insert shortest-path connectors between
+    route arcs that aren't already head-to-tail. Returns (route, disconnections).
+    Split out of decode_trip so callers that already have a point_arcs array
+    (e.g. the Optuna cache scorer) can build the route without re-decoding."""
+    route, disconnections = [], 0
+    for a in point_arcs[point_arcs >= 0].tolist():
+        if route and a == route[-1]:
+            continue
+        if route and net.v[route[-1]] != net.u[a]:
+            link = net.connecting_arcs(route[-1], a, connector_limit)
+            if not link:
+                disconnections += 1
+            route += link
+        route.append(a)
+    return route, disconnections
+
+
 def decode_trip(net, xy, times, cands, probs=None, cfg=None):
     """Returns per-point arc ids (-1 = no candidate), a route with connector
     arcs inserted, and stats {segments, disconnections}."""
@@ -72,16 +90,7 @@ def decode_trip(net, xy, times, cands, probs=None, cfg=None):
     for seg in segs:
         point_arcs[seg] = _decode_segment(net, xy, cands, probs, seg, cfg)
 
-    route, disconnections = [], 0
-    for a in point_arcs[point_arcs >= 0].tolist():
-        if route and a == route[-1]:
-            continue
-        if route and net.v[route[-1]] != net.u[a]:
-            link = net.connecting_arcs(route[-1], a, cfg.get("connector_limit", 5000.0))
-            if not link:
-                disconnections += 1
-            route += link
-        route.append(a)
+    route, disconnections = build_route(net, point_arcs, cfg.get("connector_limit", 5000.0))
     net.clear_cache()
     return point_arcs, route, {"segments": len(segs), "disconnections": disconnections}
 

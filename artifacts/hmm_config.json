@@ -1,18 +1,18 @@
 {
-  "version": "v1-tuned-distance-only",
+  "version": "v1_1-aligned-tuned-distance-only",
   "radius_m": 50.0,
   "emission": {
-    "sigma_m": 2.0105855690230556,
+    "sigma_m": 1.6788762605299112,
     "alpha_classifier_weight": 0.0
   },
   "transition": {
-    "beta_m": 15.128719527893502,
-    "uturn_penalty": 9.404575920637322,
+    "beta_m": 18.2956835903205,
+    "uturn_penalty": 28.227428399195492,
     "no_path_logp": -50.0,
     "dijkstra_limit": "2 * straight_line_m + 200"
   },
   "gaps": {
-    "gap_s": 60.0
+    "gap_s": 30.0
   },
   "fallbacks": {
     "no_candidate_point": "copy arc from nearest-in-time decoded point; if none, globally nearest arc",
@@ -20,5 +20,5 @@
     "no_connector_between_route_arcs": "route continues without connector; counted as a disconnection",
     "connector_search_limit_m": 5000.0
   },
-  "notes": "Distance-only emissions until B's classifier is plugged in (alpha > 0). sigma/beta/uturn_penalty tuned by Optuna TPE, 60 trials, seed 42, mean observation Top-1 (vs A's v1 reference labels) over the 80 TRAINING trips only -- see results/optuna_decoder.db, results/optuna_decoder_trials.csv, results/decoder_student_test.csv. Train mean top1=0.8334; student_test mean top1 0.8115 (default) -> 0.8660 (tuned) vs 0.5426 (nearest baseline). gap_s, radius_m and no_path_logp were held fixed (not tuned)."
+  "notes": "Distance-only emissions until B's classifier is plugged in (alpha > 0). Candidates now come from A's shared preprocessing (data_processing.preprocess_trip via pathsnap/hmm/prepared_trip.py), not the old throwaway pathsnap/hmm/candidates_v0.py -- same arc ids/distances/projection as A's v1 labels and B's features, deterministic tie-break. gap_s lowered 60->30 to match A's segmentation rule. sigma/beta/uturn_penalty retuned by Optuna TPE, 60 trials, seed 42, widened ranges (sigma 0.5-50 log, beta 0.5-100 log, uturn_penalty 0-30) because the previous study pinned sigma to its old lower edge; uturn_penalty is still near the new edge (28.2/30). mean observation Top-1 (vs A's v1 reference labels) over the 80 TRAINING trips only -- see results/optuna_decoder.db, results/optuna_decoder_trials.csv, results/decoder_student_test.csv. Train mean top1=0.8379 (was 0.8334 pre-alignment). student_test mean top1: nearest 0.557, same old params under the new pipeline 0.8658, newly retuned 0.8670 -- the alignment fix was mostly about correctness/determinism (A's candidates, A's gap rule), not a student_test accuracy jump; most of task 3's gain over the untuned v0 defaults (0.8115) still stands. gap_s, radius_m and no_path_logp were held fixed (not tuned)."
 }

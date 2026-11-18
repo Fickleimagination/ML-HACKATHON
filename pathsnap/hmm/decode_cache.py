@@ -24,8 +24,8 @@ from pathlib import Path
 
 import numpy as np
 
-from pathsnap.hmm.candidates_v0 import build_index, candidates
-from pathsnap.hmm.routing import RoadNetwork, load_trip, make_projector
+from pathsnap.hmm.prepared_trip import prepare_trip
+from pathsnap.hmm.routing import load_trip
 from pathsnap.hmm.viterbi import split_segments
 from pathsnap.predict import load_config
 
@@ -41,12 +41,9 @@ def precompute_trip(folder, name, cfg=None):
     any parameter set is pure NumPy."""
     cfg = {**load_config(), **(cfg or {})}
     track, nodes, arcs = load_trip(folder, name)
-    proj = make_projector(track[:, 0], track[:, 1])
-    xy = np.column_stack(proj.transform(track[:, 0], track[:, 1]))
-    nxy = np.column_stack(proj.transform(nodes[:, 0], nodes[:, 1]))
-    net = RoadNetwork(nxy, arcs)
-    cands = candidates(net, build_index(net), xy, cfg["radius"])
-    segs = split_segments(track[:, 2], cands, cfg["gap_s"])
+    net, xy, times, cands, _ = prepare_trip(track, nodes, arcs,
+                                             radius=cfg["radius"], gap_s=cfg["gap_s"])
+    segs = split_segments(times, cands, cfg["gap_s"])
 
     seg_lens = np.array([len(s) for s in segs], dtype=np.int64)
     seg_idx = np.concatenate(segs).astype(np.int64) if segs else np.empty(0, np.int64)

@@ -3,9 +3,9 @@ point_arcs exactly, for several parameter settings? Not part of the
 pipeline -- run manually, then delete or keep as a regression check."""
 import numpy as np
 
-from pathsnap.hmm.candidates_v0 import build_index, candidates
 from pathsnap.hmm.decode_cache import load_cache, precompute_trip, score_trip
-from pathsnap.hmm.routing import RoadNetwork, load_trip, make_projector
+from pathsnap.hmm.prepared_trip import prepare_trip
+from pathsnap.hmm.routing import load_trip
 from pathsnap.hmm.viterbi import decode_trip
 from pathsnap.predict import load_config
 
@@ -19,18 +19,15 @@ PARAM_SETS = [
 def check(folder, name):
     cfg = load_config()
     track, nodes, arcs = load_trip(folder, name)
-    proj = make_projector(track[:, 0], track[:, 1])
-    xy = np.column_stack(proj.transform(track[:, 0], track[:, 1]))
-    nxy = np.column_stack(proj.transform(nodes[:, 0], nodes[:, 1]))
-    net = RoadNetwork(nxy, arcs)
-    cands = candidates(net, build_index(net), xy, cfg["radius"])
+    net, xy, times, cands, _ = prepare_trip(track, nodes, arcs,
+                                             radius=cfg["radius"], gap_s=cfg["gap_s"])
 
     precompute_trip(folder, name, cfg)
     cache = load_cache(name)
 
     for params in PARAM_SETS:
         full_cfg = {**cfg, **params}
-        point_arcs, _, _ = decode_trip(net, xy, track[:, 2], cands, cfg=full_cfg)
+        point_arcs, _, _ = decode_trip(net, xy, times, cands, cfg=full_cfg)
         net.clear_cache()
         idx, arc = score_trip(cache, no_path_logp=cfg["no_path_logp"], **params)
         expected = point_arcs[idx]

@@ -23,8 +23,8 @@ import pandas as pd
 from pathsnap.evaluation.metrics import (continuity, load_point_labels,
                                           load_reference_route,
                                           route_precision_recall, top1)
-from pathsnap.hmm.candidates_v0 import build_index, candidates
-from pathsnap.hmm.routing import RoadNetwork, load_trip, make_projector
+from pathsnap.hmm.prepared_trip import prepare_trip
+from pathsnap.hmm.routing import load_trip
 from pathsnap.hmm.tune_decoder import DB_PATH, STUDY_NAME
 from pathsnap.hmm.viterbi import decode_trip
 from pathsnap.predict import load_config
@@ -52,14 +52,10 @@ def naive_route(point_arcs):
     return route
 
 
-def load_trip_geometry(folder, name, radius):
+def load_trip_geometry(folder, name, radius, gap_s):
     track, nodes, arcs = load_trip(folder, name)
-    proj = make_projector(track[:, 0], track[:, 1])
-    xy = np.column_stack(proj.transform(track[:, 0], track[:, 1]))
-    nxy = np.column_stack(proj.transform(nodes[:, 0], nodes[:, 1]))
-    net = RoadNetwork(nxy, arcs)
     t0 = time.time()
-    cands = candidates(net, build_index(net), xy, radius)
+    net, xy, _, cands, _ = prepare_trip(track, nodes, arcs, radius=radius, gap_s=gap_s)
     cand_time = time.time() - t0
     return track, nodes, arcs, xy, net, cands, cand_time
 
@@ -80,7 +76,7 @@ def evaluate_all(default_cfg, tuned_cfg):
         name = trip_dir.name
         folder = str(trip_dir)
         track, nodes, arcs, xy, net, cands, cand_time = load_trip_geometry(
-            folder, name, default_cfg["radius"])
+            folder, name, default_cfg["radius"], default_cfg["gap_s"])
         times = track[:, 2]
         labels = load_point_labels(name)
         ref_route = load_reference_route(folder, name)
@@ -127,7 +123,8 @@ def diagnose_trip77(tuned_cfg):
     failure mode the README flags for the naive nearest baseline)."""
     name = "00000077"
     folder = str(STUDENT_TEST_DIR / name)
-    track, nodes, arcs, xy, net, cands, _ = load_trip_geometry(folder, name, tuned_cfg["radius"])
+    track, nodes, arcs, xy, net, cands, _ = load_trip_geometry(
+        folder, name, tuned_cfg["radius"], tuned_cfg["gap_s"])
     times = track[:, 2]
     labels = load_point_labels(name)
     ref_route = load_reference_route(folder, name)
