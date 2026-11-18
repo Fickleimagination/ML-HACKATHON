@@ -1,4 +1,7 @@
-"""Decode every trip in a folder and summarise to one CSV.
+"""Run the legacy v0 candidate-generator experiment over a trip folder.
+
+For current decoder metrics, use `python -m pathsnap.experiments.eval_student_test`.
+This legacy runner remains available to reproduce the original route-membership CSV.
 
     python -m pathsnap.hmm.batch_decode data/student_test
     python -m pathsnap.hmm.batch_decode data/train

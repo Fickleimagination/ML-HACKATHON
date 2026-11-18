@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Select a GPS trip to view its predicted route and evaluation metrics.">
+  <title>PathSnap | Route evaluator</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand">PathSnap</div>
+    <span>Route evaluator</span>
+  </header>
+  <main>
+    <section class="controls" aria-labelledby="title">
+      <h1 id="title">Trip evaluation</h1>
+      <form id="prediction">
+        <label for="trip">Trip ID</label>
+        <select id="trip" name="trip" required disabled>
+          <option value="">Loading trips…</option>
+        </select>
+        <button id="run" disabled>Run prediction</button>
+      </form>
+      <p id="status" role="status" aria-live="polite"></p>
+      <noscript>Enable JavaScript to load trips and run predictions.</noscript>
+      <section id="results" aria-labelledby="results-title" hidden>
+        <h2 id="results-title">Trip metrics</h2>
+        <dl id="metrics"></dl>
+      </section>
+      <details>
+        <summary>API connection</summary>
+        <form id="connection">
+          <label for="api">API base URL</label>
+          <input id="api" type="url" required placeholder="http://192.168.1.20:8000">
+          <button>Connect</button>
+        </form>
+      </details>
+    </section>
+    <section class="map-panel" aria-labelledby="map-title">
+      <header>
+        <h2 id="map-title">Route map</h2>
+        <span id="map-trip"></span>
+      </header>
+      <div class="map-canvas">
+        <p id="map-placeholder">Choose a trip and run a prediction to view its route.</p>
+        <iframe id="map" title="GPS observations and predicted route" sandbox="allow-scripts" hidden></iframe>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

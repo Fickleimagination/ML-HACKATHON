@@ -1,0 +1,101 @@
+/* Hallmark v2.0.0 | shape: workbench | theme: custom | genre: modern-minimal | signature: live route map */
+/* Critique: keep controls legible at map scale and reserve the saturated accent for the run action. */
+/* waive F4: Connect is outlined inside collapsed connection settings. */
+:root {
+  color-scheme: light;
+  --paper: #f7f6f0;
+  --panel: #fcfbf5;
+  --ink: #202d27;
+  --muted: #53635a;
+  --line: #cfd6ca;
+  --grid: #e4e8dd;
+  --map: #eff2e9;
+  --green: #22543d;
+  --green-hover: #163e2d;
+  --white: #ffffff;
+  --disabled: #e1e6dc;
+  --error: #9b331c;
+  --focus: #1857ad;
+  --display: "Instrument Serif", Georgia, serif;
+  --body: "Instrument Sans", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 1rem/1.45 var(--body);
+}
+.masthead {
+  margin: auto;
+  max-width: 1440px;
+  padding: 1.1rem clamp(1rem, 4vw, 3.5rem);
+  display: flex;
+  align-items: baseline;
+  gap: 1.3rem;
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-size: 1.25rem; font-weight: 760; letter-spacing: -.045em; }
+.masthead span, #map-trip { color: var(--muted); font-size: .9rem; }
+main {
+  max-width: 1440px;
+  margin: auto;
+  padding: clamp(1.2rem, 3vw, 2.75rem) clamp(1rem, 4vw, 3.5rem);
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: clamp(1rem, 3vw, 3rem);
+}
+h1 {
+  font: 400 clamp(2.5rem, 4vw, 3.7rem)/.98 var(--display);
+  overflow-wrap: break-word;
+  min-width: 0;
+  text-wrap: balance;
+  letter-spacing: -.045em;
+  margin: .25rem 0 1.6rem;
+}
+h2 { font-weight: 700; font-size: 1rem; margin: 0; }
+label { display: block; font-size: .9rem; margin-bottom: .3rem; }
+button, select, input {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 5px;
+  padding: .55rem .7rem;
+  font: inherit;
+}
+select, input { color: var(--ink); border: 1px solid var(--muted); background: var(--panel); }
+button { border: 1px solid transparent; background: var(--green); color: var(--white); cursor: pointer; margin-top: .65rem; }
+button:hover:not(:disabled) { background: var(--green-hover); }
+button:active:not(:disabled) { background: var(--ink); }
+button:disabled, select:disabled { background: var(--disabled); color: var(--muted); cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+#status { font-variant-numeric: tabular-nums; margin: .8rem 0 1rem; color: var(--muted); font-size: .9rem; }
+#status[data-error="true"] { color: var(--error); }
+#results { border-top: 1px solid var(--line); padding-top: 1rem; }
+dl { margin: .4rem 0 1.1rem; }
+dl > div { display: flex; justify-content: space-between; gap: .5rem; border-bottom: 1px solid var(--grid); padding: .35rem 0; }
+dt { color: var(--muted); font-size: .92rem; }
+dd { margin: 0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+details { margin-top: 1.1rem; border-top: 1px solid var(--line); padding-top: .65rem; }
+summary { cursor: pointer; color: var(--muted); padding: .35rem 0; }
+#connection { margin-top: .6rem; }
+#connection button { background: var(--panel); border-color: var(--line); color: var(--green); }
+#connection button:hover { background: var(--map); }
+#connection button:active { background: var(--grid); }
+.map-panel { display: grid; grid-template-rows: auto 1fr; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); overflow: clip; }
+.map-panel > header { min-height: 50px; padding: .6rem .9rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.map-canvas {
+  min-height: clamp(420px, 70vh, 760px);
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--map);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 2rem 2rem;
+}
+#map-placeholder { padding: 1rem; background: var(--panel); border: 1px solid var(--line); margin: 1rem; text-align: center; }
+iframe { position: absolute; inset: 0; height: 100%; width: 100%; border: 0; }
+@media (max-width: 675px) {
+  main { grid-template-columns: minmax(0, 1fr); }
+  .map-canvas { min-height: 55vh; }
+}

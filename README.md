@@ -9,7 +9,7 @@ PathSnap matches noisy GPS observations to a road network. For every GPS point i
 | Bhavyaa Garg | A: data processing, reference labels, EDA | `data_processing/` |
 | [name] | B: features and models | `features/`, `models/` *(to be pushed)* |
 | Arundhati K | C: Bayesian optimisation, HMM and Viterbi | `pathsnap/` |
-| [name] | D: API, UI and deployment | `api/`, `ui/` *(to be pushed)* |
+| Bhavesh V | D: API, UI and deployment | `api/`, `ui/`, `visualisation/` |
 
 ## Repository layout
 
@@ -23,8 +23,10 @@ pathsnap/
   hmm/               C: road graph, Dijkstra, HMM/Viterbi, decoder cache and tuning
   evaluation/        C: Top-1, continuity, route precision/recall (never imported by prediction code)
   experiments/       C: student-test evaluation, sampling-rate test, plots
-api/                 D: FastAPI backend                            (to be pushed)
-ui/                  D: evaluator interface                        (to be pushed)
+api/                 D: FastAPI backend and server-side scoring
+ui/                  D: static evaluator interface
+visualisation/       D: Folium maps for the UI and report
+scripts/check_api.py D: HTTP readiness and prediction parity checks
 artifacts/           hmm_config.json and saved model files
 results/             tables, figures, Folium maps, Optuna studies, logs
 data/                raw and processed data (not in git)
@@ -32,7 +34,7 @@ data/                raw and processed data (not in git)
 
 ## Setup
 
-Python 3.10 or newer.
+Use Python 3.11 or newer. The demo was verified on Python 3.13.
 
 ```bash
 git clone https://github.com/Fickleimagination/ML-HACKATHON.git
@@ -49,6 +51,7 @@ The data is not committed. Unzip the organisers' `Student folder.zip` and place 
 data/
   train/<trip_id>/<trip_id>.track .nodes .arcs .route        80 trips
   student_test/<trip_id>/...                                 10 trips
+  evaluator_test/<trip_id>/...                               10 reserved trips, API laptop only
   processed/                                                 created by step 1 below
 ```
 
@@ -90,7 +93,7 @@ python -m pathsnap.experiments.plots                         # figures in result
 python -m pathsnap.hmm.make_expected_outputs data/student_test   # reference outputs for the API check
 ```
 
-Decoder settings live in `artifacts/hmm_config.json`.
+Decoder settings live in `artifacts/hmm_config.json`. The original `pathsnap.hmm.batch_decode` command remains available to reproduce the legacy v0 candidate experiment. For current decoder metrics, use the student-test evaluation command above.
 
 ### 4. Classifier tuning and integration (B and C)
 
@@ -100,22 +103,61 @@ Decoder settings live in `artifacts/hmm_config.json`.
 
 ## Deployment: two laptops
 
-| Laptop | Runs | Holds |
-| --- | --- | --- |
-| Laptop 1 | FastAPI backend | Trained model, HMM config, road networks, evaluator trips and their reference routes |
-| Laptop 2 | Evaluator UI | Nothing but the UI; never receives reference routes or labels |
+Laptop 1 hosts the FastAPI backend, decoder configuration and the trip dataset. Laptop 2 only needs the static `ui/` directory and a browser. The active predictor is `pathsnap.predict:predict_trip`, currently the tuned distance-only HMM using shared candidates and a 30-second gap rule. The classifier integration is pending.
 
-```bash
-# Laptop 1 (API)  [D: confirm]
-# uvicorn api.main:app --host 0.0.0.0 --port 8000
+From the repository root on laptop 1, with the environment active:
 
-# Laptop 2 (UI)   [D: confirm]
-# set the API address to http://<laptop-1-IP>:8000, then start the UI
+```sh
+# Student-test rehearsal. The API defaults to data/student_test.
+python -m uvicorn api.app:app --host 0.0.0.0 --port 8000
+
+# Final-demo launch. Replace the running rehearsal server first.
+PATHSNAP_DATA=data/evaluator_test python -m uvicorn api.app:app --host 0.0.0.0 --port 8000
 ```
 
-Both laptops must be on the same network; a phone hotspot is the most reliable. On macOS, find laptop 1's IP with `ipconfig getifaddr en0` and allow incoming connections when prompted. The API logs every request in its terminal.
+For the final-demo launch in PowerShell, set `$env:PATHSNAP_DATA = "data/evaluator_test"` before running the same Uvicorn command. Set `PATHSNAP_PREDICTOR=nearest` for the nearest-arc baseline or set it to a compatible `module:function` to exercise another predictor. The callable takes raw `track`, `nodes` and `arcs` arrays and returns observation arc IDs and an ordered route. It may include confidence, candidate lists in predictor order, and decoder diagnostics.
 
-Flow: the UI lists the evaluation trips → the evaluator picks one → the UI sends the trip ID → the API runs `preprocess_trip`, the classifier and the HMM → the API scores the prediction server-side with the aligner → the UI shows the predicted route and metrics.
+On laptop 2, run this from the repository root with the UI directory present:
+
+```sh
+python -m http.server 8080 --bind 127.0.0.1 --directory ui
+```
+
+1. Join the same Wi-Fi or hotspot on both laptops. On macOS, find laptop 1’s Wi-Fi address with `ipconfig getifaddr en0`. On Windows, use `ipconfig`.
+2. On laptop 2, visit `http://LAPTOP_1_IP:8000/trips` to verify reachability. Open [the evaluator](http://127.0.0.1:8080), enter `http://LAPTOP_1_IP:8000` under **API connection**, and select **Connect**. For a one-laptop rehearsal, use `http://127.0.0.1:8000`.
+3. Select a trip and click **Run prediction**. The Folium map’s GPS, road network and predicted route layers render offline. Enable the optional OpenStreetMap layer only if you want an online basemap.
+4. For the reserved partition, run `python -m scripts.check_api --readiness-only` on laptop 1 to verify all 10 trip responses without printing or exporting scores. Keep the API terminal visible during the demo for request and inference logs.
+
+Set `PATHSNAP_CORS_ORIGINS=http://127.0.0.1:8080` on laptop 1 to limit browser requests to that UI origin. The default allows cross-origin requests from the demo UI.
+
+## API and verification
+
+- `GET /trips` returns the trip IDs and active predictor.
+- `POST /predict` takes `{"trip_id": "00000052"}` and returns predicted arcs, the route, candidate arc IDs in predictor order, decoder diagnostics, aggregate metrics, inference time and a Folium map. Use `"include_map": false` for a smaller response.
+- FastAPI's interactive API documentation is available at `/docs`.
+
+```sh
+curl http://127.0.0.1:8000/trips
+curl -X POST http://127.0.0.1:8000/predict \
+  -H 'Content-Type: application/json' \
+  -d '{"trip_id":"00000052","include_map":false}'
+python -m scripts.check_api --api http://127.0.0.1:8000 \
+  --direct-data data/student_test --csv results/deployment/student_test_hmm_aligned.csv
+```
+
+These examples use the API’s default student-test partition. The smoke check calls the same HTTP endpoints as the UI for all 10 trips and verifies response structure, scoring and map layers. The `--direct-data` option compares the response exactly with a direct run on the same machine. The `--expected-dir results/expected_outputs` option performs a strict comparison with C’s saved fixtures. On the development Mac, the API matches local direct inference on all 10 student-test trips. All saved fixtures match candidate ordering and diagnostics. Three match every prediction field exactly. The remaining differences are 46 per-observation arc IDs and one reconstructed route. For the trained model, use fixtures from the corresponding predictor version and a new CSV filename. On the API laptop, capture the terminal showing `POST /predict` and HTTP 200 for the report.
+
+## Scoring and report maps
+
+After inference, the API calls the team's shared v1 reference alignment in `data_processing.preprocess`. It minimizes point-to-segment distance plus a penalty of 0.1 per metre of route skipped, waived across GPS gaps over 30 seconds. Top-1 uses all labelled observations. The high-confidence Top-1 also excludes observations over 50 metres from their aligned arc. Unlabelled observations are excluded from reference-based point scores. Candidate macro F1 averages the positive and negative binary F1 across candidates for labelled observations. Continuity counts adjacent matched predictions that stay on the same arc or follow directed endpoints. Route precision and recall measure overlap of unique directed arcs weighted by their lengths. A metric with no usable denominator is shown as unavailable.
+
+For an offline report comparison, run this command locally on a machine with the student-test reference files. Run it with the team's predictor configured to generate a final-model map.
+
+```sh
+python -m visualisation.maps 00000052 results/student_test_00000052.html --reference
+```
+
+The report command can include a reference layer. The evaluator API keeps reference geometry and per-observation labels on the server. See [the report handoff](results/report_sections_6_7.md) for the distance-only HMM evidence and final capture checklist.
 
 ## Rules we follow
 

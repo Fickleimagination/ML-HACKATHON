@@ -2,5 +2,11 @@ data/
 __pycache__/
 *.pyc
 .DS_Store
-data/
 results/cache/
+.venv/
+train/
+student_test/
+evaluator_test/
+.hallmark/
+results/*.html
+results/*.log

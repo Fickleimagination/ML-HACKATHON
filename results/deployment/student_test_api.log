@@ -1,0 +1,28 @@
+# Student-test API log excerpt. Local connection details have been redacted.
+INFO:     Loaded 10 trips from student-test | predictor=PathSnap HMM
+INFO:     Prediction complete | trip=00000007 observations=1354 inference_ms=110.4 elapsed_ms=270.2 top1=0.9062038404726735
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000065 observations=768 inference_ms=318.0 elapsed_ms=465.5 top1=0.8072916666666666
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000007 observations=1354 inference_ms=82.3 elapsed_ms=228.5 top1=0.9062038404726735
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000065 observations=768 inference_ms=344.8 elapsed_ms=497.9 top1=0.8072916666666666
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000052 observations=262 inference_ms=102.7 elapsed_ms=369.7 top1=0.9618320610687023
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000056 observations=3958 inference_ms=1793.5 elapsed_ms=2595.6 top1=0.887822132390096
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000000 observations=2503 inference_ms=302.1 elapsed_ms=651.8 top1=0.937674790251698
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000009 observations=1049 inference_ms=922.3 elapsed_ms=1108.6 top1=0.8131553860819828
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000040 observations=2995 inference_ms=342.8 elapsed_ms=807.7 top1=0.932220367278798
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000052 observations=262 inference_ms=60.2 elapsed_ms=113.1 top1=0.9618320610687023
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000076 observations=1486 inference_ms=1600.1 elapsed_ms=2118.5 top1=0.8203230148048453
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000077 observations=3911 inference_ms=1101.3 elapsed_ms=1532.1 top1=0.7522372794681668
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
+INFO:     Prediction complete | trip=00000091 observations=874 inference_ms=560.7 elapsed_ms=711.8 top1=0.8501144164759725
+INFO:     <local-client> - "POST /predict HTTP/1.1" 200 OK
