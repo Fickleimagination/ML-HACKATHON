@@ -34,6 +34,7 @@ Trips are spread across Europe, Russia, North and South America, East and Southe
 | 13 | Duplicate arcs and self-loops | Duplicate arcs in 60 trips (median 2.5, max 322); self-loops in 9 trips; only 11 of 34,491 route arcs have an exact duplicate | Negligible for labels; noted |
 | 14 | Undefined heading | 1.0% (train), 0.6% (student-test) of points moved < 2 m in their ±3-point window | Heading = NaN; models must handle missing heading |
 | 15 | Route skips a stretch the GPS drives in that direction | Seen on out-and-back trip 61 | The order-preserving alignment can then assign the reverse arc; accepted as a limitation of the reference route |
+| 16 | Reference labels that point against the direction of travel | For moving points (> 3 m/s, heading defined, not low-confidence), the labelled arc points > 90° from the GPS heading for a median of 3.1% of points per trip (v0 labels: 2.0%). Outliers: trips 33 (35%), 10 (25%), 77 (21%, student-test), 82 (20%), 61 (19%). Part is heading noise at sharp turns; the rest is the reference route not containing the travelled direction. Source: `results/labels/label_quality_by_trip.csv` (`data_processing/label_quality.py`) | Labels kept; trip 77's low score is mainly a reference-route issue, so the decoder is not tuned to it; reported as a limitation |
 
 ## Label summary (v1 order-preserving alignment, 50 m radius)
 
