@@ -7,7 +7,7 @@ PathSnap matches noisy GPS observations to a road network. For every GPS point i
 | Member | Role | Code |
 | --- | --- | --- |
 | Bhavyaa Garg | A: data processing, reference labels, EDA | `data_processing/` |
-| Person B | Features and models | `features/`, `models/` |
+| Aryan Revankar| Features and models | `features/`, `models/` |
 | Arundhati K | C: Bayesian optimisation, HMM and Viterbi | `pathsnap/` |
 | Bhavesh V | D: API, UI and deployment | `api/`, `ui/`, `visualisation/` |
 
